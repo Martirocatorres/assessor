@@ -590,8 +590,8 @@ const ING_LABELS  = ['Menys de 1.000€','1.000–2.000€','2.000–3.000€','
 const ING_MIDS    = [500, 1500, 2500, 4000, 6500, 10000];
 const DESP_LABELS = ['Menys de 500€','500–1.000€','1.000–1.500€','1.500–2.500€','2.500–4.000€','+4.000€'];
 const DESP_MIDS   = [250, 750, 1250, 2000, 3250, 5000];
-const SAV_LABELS  = ['Menys de 2.000€','2.000–5.000€','5.000–20.000€','20.000–50.000€','50.000–150.000€','150.000–300.000€','+300.000€'];
-const SAV_MIDS    = [1000, 3500, 12500, 35000, 100000, 225000, 400000];
+const SAV_LABELS  = ['Menys de 5.000€','5.000–20.000€','20.000–50.000€','50.000–150.000€','150.000–300.000€','300.000–500.000€','+500.000€'];
+const SAV_MIDS    = [2500, 12500, 35000, 100000, 225000, 400000, 750000];
 
 function updIng()  { document.getElementById('ingVal').textContent  = ING_LABELS[+document.getElementById('ing').value]; }
 function updDesp() { document.getElementById('despVal').textContent = DESP_LABELS[+document.getElementById('desp').value]; }
@@ -610,12 +610,12 @@ const Qs = [
     title: 'Interès compost',
     q: "Què és l'interès compost?",
     opts: [
-      "Un interès fix que el banc cobra per un préstec",
       "Els guanys generats per una inversió que, al seu torn, generen nous guanys",
+      "Un interès fix que el banc cobra per un préstec",
       "La suma de tots els interessos pagats en una hipoteca",
       "Un producte d'estalvi garantit pels bancs"
     ],
-    ans: 1,
+    ans: 0,
     exp: "L'interès compost és el procés pel qual els guanys es reinverteixen i generen nous guanys. Einstein el va anomenar la \"vuitena meravella del món\"."
   },
   {
@@ -636,10 +636,10 @@ const Qs = [
     opts: [
       "Invertir tot el capital disponible d'un cop aprofitant mínims de mercat",
       "Comprar accions estrangeres sempre en dòlars americans",
-      "Invertir una quantitat fixa de manera periòdica independentment del preu",
-      "Una estratègia d'inversió basada en derivats financers"
+      "Una estratègia d'inversió basada en derivats financers",
+      "Invertir una quantitat fixa de manera periòdica independentment del preu"
     ],
-    ans: 2,
+    ans: 3,
     exp: "El DCA consisteix a invertir una quantitat fixa regularment (per exemple, 200€ cada mes). Permet comprar més participacions quan els preus cauen i menys quan pugen, reduint el cost mitjà."
   },
   {
@@ -658,12 +658,12 @@ const Qs = [
     title: 'Diversificació',
     q: "Quina afirmació sobre diversificació és correcta?",
     opts: [
+      "La diversificació redueix el risc específic però no elimina el risc de mercat global",
       "Diversificar garanteix no perdre diners mai",
       "Tenir moltes accions del mateix sector és una bona diversificació",
-      "La diversificació redueix el risc específic però no elimina el risc de mercat global",
       "Un inversor expert no necessita diversificar"
     ],
-    ans: 2,
+    ans: 0,
     exp: "La diversificació redueix el risc de que un actiu concret et perjudiqui molt, però no et protegeix de caigudes generals del mercat. Cal combinar actius poc correlacionats."
   },
   {
@@ -672,10 +672,10 @@ const Qs = [
     opts: [
       "El gestor expert sempre batarà el mercat",
       "Garanteix rendiments positius cada any",
-      "Té comissions molt baixes i històricament supera la majoria de fons actius a llarg termini",
-      "Permet invertir exclusivament en empreses espanyoles"
+      "Permet invertir exclusivament en empreses espanyoles",
+      "Té comissions molt baixes i històricament supera la majoria de fons actius a llarg termini"
     ],
-    ans: 2,
+    ans: 3,
     exp: "Els fons indexats repliquen un índex (com el S&P 500) amb comissions molt baixes. Estudis mostren que el 80–90% dels fons actius no baten l'índex a llarg termini."
   },
   {
@@ -695,11 +695,11 @@ const Qs = [
     q: "Quin és el principal avantatge fiscal d'un pla de pensions a Espanya?",
     opts: [
       "Els guanys mai tributen, ni en el moment de retirar",
-      "Les aportacions redueixen la base imposable de l'IRPF en l'any que es fan",
       "Permet invertir sense límit anual amb deducció total",
-      "El capital invertit sempre és garantit pel govern"
+      "El capital invertit sempre és garantit pel govern",
+      "Les aportacions redueixen la base imposable de l'IRPF en l'any que es fan"
     ],
-    ans: 1,
+    ans: 3,
     exp: "Les aportacions a plans de pensions redueixen la base imposable de l'IRPF (fins a 1.500€/any generals + aportació empresa). L'avantatge és que difereix l'impost, no l'elimina — es paga en el moment de rescatar."
   },
   {
@@ -707,24 +707,24 @@ const Qs = [
     q: "Quina relació existeix entre risc i rendiment esperat en inversions?",
     opts: [
       "Més risc sempre implica menys rendiment",
-      "El rendiment no té cap relació amb el risc",
       "Generalment, actius amb major risc esperen major rendiment potencial a llarg termini",
+      "El rendiment no té cap relació amb el risc",
       "Els actius de baix risc sempre ofereixen el millor rendiment"
     ],
-    ans: 2,
+    ans: 1,
     exp: "La relació risc-rendiment és fonamental en finances. Un dipòsit bancari ofereix seguretat però poc rendiment. La renda variable és més volàtil però històricament ofereix molt millors rendiments a llarg termini."
   },
   {
     title: 'Comissions ocultes',
     q: "Un banc et ven un fons propi amb un 2% de comissió de gestió i 1% de distribució. Quin cost real suportes?",
     opts: [
-      "Un 1% anual, perquè la comissió de distribució la paga el banc",
       "Un 3% anual sobre el capital invertit",
+      "Un 1% anual, perquè la comissió de distribució la paga el banc",
       "No hi ha cost, és una inversió i el banc assumeix les comissions",
       "Depèn exclusivament de la rendibilitat obtinguda"
     ],
-    ans: 1,
-    exp: "Les comissions de gestió I distribució es sumen i es cobren anualment sobre el teu capital. Un 3% anual en 20 anys pot representar entre un 40–60% menys de capital final respecte a un ETF equivalent al 0,2%."
+    ans: 0,
+    exp: "Les comissions de gestió i distribució es sumen i es cobren anualment sobre el teu capital. Un 3% anual en 20 anys pot representar entre un 40–60% menys de capital final respecte a un ETF equivalent al 0,2%."
   }
 ];
 
