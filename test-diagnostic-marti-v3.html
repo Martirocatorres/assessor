@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnòstic Financer · Martí Roca de Torres</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<script>
+const CONFIG = {
+  EMAILJS_PUBLIC_KEY:  'l1Z7VjGNIUQrHiYt1',
+  EMAILJS_SERVICE_ID:  'Fitxa_Clients',
+  EMAILJS_TEMPLATE_ID: 'template_pmsr1d5',
+  SHEETS_URL: 'https://script.google.com/macros/s/AKfycbzRBqmKUenPG-Q5EZrSa3OHH-PJOEThVVm2Y2PZKaUBXQpv5I_e2MqI8cE4d4OjW3Ui/exec'
+};
+</script>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #111111;
+  --bg2: #1a1a1a;
+  --bg3: #222222;
+  --ac: #c9a84c;
+  --ac-hover: #d4b05e;
+  --ac-dim: rgba(201,168,76,0.12);
+  --ac-dim2: rgba(201,168,76,0.06);
+  --text: #f0ead8;       /* més clar que abans */
+  --text2: #c8bfa8;      /* subtítols més clars */
+  --text3: #a09080;      /* text secundari */
+  --border: rgba(201,168,76,0.18);
+  --border2: rgba(255,255,255,0.07);
+  --r: 10px;
+  --r2: 14px;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+.wrap { max-width: 640px; margin: 0 auto; padding: 0 20px 60px; }
+
+/* ── HEADER ── */
+.hdr {
+  text-align: center;
+  padding: 40px 0 32px;
+  border-bottom: 1px solid var(--border2);
+  margin-bottom: 36px;
+}
+.hdr-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--ac);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.hdr h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+.hdr p {
+  font-size: 15px;
+  color: var(--text2);
+}
+
+/* ── STEP INDICATOR ── */
+.step-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 36px;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 50px;
+  padding: 12px 20px;
+}
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  font-size: 12px;
+  color: var(--text3);
+}
+.step-item.active { color: var(--text2); }
+.step-item.done { color: var(--ac); }
+.step-num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; flex-shrink: 0;
+  color: var(--text3);
+}
+.step-item.active .step-num {
+  background: var(--ac); color: #111; border-color: var(--ac);
+}
+.step-item.done .step-num {
+  background: transparent; color: var(--ac); border-color: var(--ac);
+}
+.step-sep { width: 1px; height: 14px; background: var(--border2); margin: 0 8px; flex-shrink: 0; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+/* ── CONFIDENCIALITAT ── */
+.conf-ico { font-size: 36px; margin-bottom: 16px; }
+.conf-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px; font-weight: 500;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+.conf-text { font-size: 14px; color: var(--text2); margin-bottom: 20px; }
+.conf-list { list-style: none; margin-bottom: 24px; }
+.conf-list li {
+  font-size: 14px;
+  color: var(--text2);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border2);
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.conf-list li:last-child { border-bottom: none; }
+.conf-list li::before { content: '·'; color: var(--ac); font-size: 18px; line-height: 1.4; flex-shrink: 0; }
+.check-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--ac-dim2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+.check-row input[type="checkbox"] {
+  width: 18px; height: 18px; flex-shrink: 0;
+  accent-color: var(--ac);
+  margin-top: 1px;
+}
+.check-row label { font-size: 13px; color: var(--text2); cursor: pointer; }
+
+/* ── FORM ── */
+.field-label {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ac);
+  margin-bottom: 8px;
+  display: block;
+}
+.field-input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 12px 16px;
+  font-size: 15px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  transition: border-color 0.2s;
+}
+.field-input:focus { outline: none; border-color: var(--ac); }
+.field-input::placeholder { color: var(--text3); }
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.field-full { margin-bottom: 16px; }
+
+.opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.opt-btn {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 11px 14px;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text2);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+}
+.opt-btn:hover { border-color: var(--ac); color: var(--text); background: var(--ac-dim2); }
+.opt-btn.sel { border-color: var(--ac); color: var(--ac); background: var(--ac-dim); }
+
+.section-title {
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ac);
+  margin: 28px 0 16px;
+}
+
+/* ── SLIDER PATRIMONI ── */
+.slider-wrap { margin-bottom: 4px; }
+.slider-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.slider-label { font-size: 14px; color: var(--text2); }
+.slider-val {
+  font-size: 15px; font-weight: 600;
+  color: var(--ac);
+}
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 24px;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 4px 0;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--ac);
+  cursor: pointer;
+  border: 3px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--ac);
+  margin-top: -9px;
+}
+input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--ac);
+  cursor: pointer;
+  border: 3px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--ac);
+}
+
+/* ── PROGRESS BAR (step 3) ── */
+.prog-wrap { margin-bottom: 28px; }
+.prog-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text3);
+  margin-bottom: 8px;
+}
+.prog-info span:last-child { color: var(--ac); font-weight: 500; }
+.pbar { height: 3px; background: var(--bg3); border-radius: 2px; }
+.pfill { height: 100%; background: var(--ac); border-radius: 2px; transition: width 0.3s; }
+
+/* ── PREGUNTES (step 3) — text MÉS GRAN ── */
+.q-step-label {
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ac);
+  margin-bottom: 10px;
+}
+.q-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;          /* abans ~20px */
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.q-text {
+  font-size: 17px;           /* abans ~14px */
+  color: var(--text2);       /* més clar que antes */
+  margin-bottom: 24px;
+  line-height: 1.55;
+}
+
+.q-opts { display: flex; flex-direction: column; gap: 10px; }
+.q-opt {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 16px 20px;        /* més padding */
+  font-size: 16px;           /* abans ~14px */
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text2);       /* més clar */
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  line-height: 1.45;
+}
+.q-opt:hover { border-color: var(--ac); color: var(--text); background: var(--ac-dim2); }
+.q-opt.sel { border-color: var(--ac); color: var(--text); background: var(--ac-dim); }
+.q-opt.correct { border-color: #4caf82; color: #4caf82; background: rgba(76,175,130,0.1); }
+.q-opt.wrong { border-color: #c0504d; color: #c0504d; background: rgba(192,80,77,0.1); }
+
+.q-feedback {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: var(--r);
+  font-size: 14px;
+  line-height: 1.5;
+  display: none;
+}
+.q-feedback.show { display: block; }
+.q-feedback.ok { background: rgba(76,175,130,0.08); border: 1px solid rgba(76,175,130,0.25); color: #7ecfaa; }
+.q-feedback.ko { background: rgba(192,80,77,0.08); border: 1px solid rgba(192,80,77,0.25); color: #d98080; }
+
+/* ── BUTTONS ── */
+.btn-main {
+  width: 100%;
+  background: var(--ac);
+  color: #111;
+  border: none;
+  border-radius: var(--r);
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+  margin-top: 8px;
+}
+.btn-main:hover:not(:disabled) { background: var(--ac-hover); }
+.btn-main:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.btn-sec {
+  width: 100%;
+  background: transparent;
+  color: var(--text3);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 14px;
+  font-size: 15px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 10px;
+}
+.btn-sec:hover { border-color: var(--text3); color: var(--text2); }
+
+.btn-row { margin-top: 28px; }
+
+/* ── RESULTAT ── */
+.result-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ac);
+  margin-bottom: 12px;
+}
+.profile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ac-dim);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  padding: 8px 18px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ac);
+  margin-bottom: 20px;
+}
+.profile-desc { font-size: 15px; color: var(--text2); margin-bottom: 28px; line-height: 1.6; }
+
+.divider { height: 1px; background: var(--border2); margin: 28px 0; }
+
+/* Rendiment estimat — nou format */
+.rend-label {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 14px;
+}
+.rend-intro {
+  font-size: 14px;
+  color: var(--text2);
+  margin-bottom: 14px;
+  line-height: 1.6;
+}
+.rend-big {
+  font-family: 'Playfair Display', serif;
+  font-size: 58px;
+  font-weight: 400;
+  color: var(--ac);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.rend-annual {
+  font-size: 16px;
+  color: var(--text2);
+  margin-bottom: 18px;
+}
+.rend-compare {
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+.rend-compare strong { color: var(--text); }
+.rend-disclaimer {
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 12px;
+  line-height: 1.5;
+}
+
+.profile-box {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 18px 20px;
+  margin: 20px 0 28px;
+}
+.profile-box p { font-size: 14px; color: var(--text2); margin-bottom: 4px; }
+.profile-box p:last-child { margin-bottom: 0; }
+
+.cta-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+.cta-desc { font-size: 14px; color: var(--text2); margin-bottom: 22px; line-height: 1.6; }
+
+.footer-note {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 16px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hdr">
+    <div class="hdr-label">Martí Roca de Torres · Assessor Independent</div>
+    <h1>Diagnòstic Financer</h1>
+    <p>Descobreix en 5 minuts on ets i quant pots millorar</p>
+  </div>
+
+  <!-- STEP BAR -->
+  <div class="step-bar" id="stepBar">
+    <div class="step-item active" id="si1">
+      <div class="step-num">1</div>Privacitat
+    </div>
+    <div class="step-sep"></div>
+    <div class="step-item" id="si2">
+      <div class="step-num">2</div>El teu perfil
+    </div>
+    <div class="step-sep"></div>
+    <div class="step-item" id="si3">
+      <div class="step-num">3</div>Test Financer
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       PAS 1 · CONFIDENCIALITAT
+  ══════════════════════════════ -->
+  <div id="step1">
+    <div class="card">
+      <div class="conf-ico">🔒</div>
+      <div class="conf-title">Les teves dades, 100% confidencials</div>
+      <p class="conf-text">Abans de continuar, vull que sàpigues com tracto la informació que comparteixes:</p>
+      <ul class="conf-list">
+        <li>Totes les dades que proporcionis són estrictament confidencials</li>
+        <li>No es compartiran amb tercers en cap cas</li>
+        <li>Pots demanar l'eliminació de les teves dades en qualsevol moment</li>
+      </ul>
+      <label class="check-row" for="chkPriv">
+        <input type="checkbox" id="chkPriv" onchange="checkPriv()">
+        <span>He llegit i accepto el tractament confidencial de les meves dades per preparar la sessió</span>
+      </label>
+      <button class="btn-main" id="btnPriv" disabled onclick="goStep(2)">Entès, comencem →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       PAS 2 · DADES PERSONALS
+  ══════════════════════════════ -->
+  <div id="step2" style="display:none">
+
+    <div class="section-title">Dades de contacte</div>
+    <div class="card">
+      <div class="field-full">
+        <label class="field-label">Nom i cognoms</label>
+        <input class="field-input" type="text" id="nom" placeholder="El teu nom">
+      </div>
+      <div class="field-full" style="margin-bottom:0">
+        <label class="field-label">Telèfon o email</label>
+        <input class="field-input" type="text" id="contacte" placeholder="Com puc contactar-te?">
+      </div>
+    </div>
+
+    <div class="section-title">Ingressos i despeses</div>
+    <div class="card">
+      <div class="slider-wrap" style="margin-bottom:20px">
+        <div class="slider-label-row">
+          <span class="slider-label">Ingressos nets mensuals</span>
+          <span class="slider-val" id="ingVal">2.000–3.000€</span>
+        </div>
+        <input type="range" id="ing" min="0" max="5" value="2" oninput="updIng()">
+      </div>
+      <div class="slider-wrap">
+        <div class="slider-label-row">
+          <span class="slider-label">Despeses fixes mensuals</span>
+          <span class="slider-val" id="despVal">1.000–1.500€</span>
+        </div>
+        <input type="range" id="desp" min="0" max="5" value="2" oninput="updDesp()">
+      </div>
+    </div>
+
+    <div class="section-title">Situació habitatge</div>
+    <div class="card">
+      <div class="opt-grid" id="habGrid">
+        <button class="opt-btn" onclick="selHab(this,'Propietat sense hipoteca')">Propietat sense hipoteca</button>
+        <button class="opt-btn" onclick="selHab(this,'Propietat amb hipoteca')">Propietat amb hipoteca</button>
+        <button class="opt-btn" onclick="selHab(this,'Lloguer')">Lloguer</button>
+        <button class="opt-btn" onclick="selHab(this,'Amb família / altres')">Amb família / altres</button>
+      </div>
+    </div>
+
+    <div class="section-title">Estalvis disponibles</div>
+    <div class="card">
+      <div class="slider-wrap">
+        <div class="slider-label-row">
+          <span class="slider-label">Valor aproximat</span>
+          <span class="slider-val" id="savVal">5.000–20.000€</span>
+        </div>
+        <input type="range" id="sav" min="0" max="6" value="2" oninput="updSav()">
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-main" id="btnStep2" onclick="goStep(3)">Continuar al test →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       PAS 3 · TEST FINANCER
+  ══════════════════════════════ -->
+  <div id="step3" style="display:none">
+    <div class="prog-wrap">
+      <div class="prog-info">
+        <span id="qLabel">Pregunta 1 de 10</span>
+        <span id="qPts">0 / 10 correctes</span>
+      </div>
+      <div class="pbar"><div class="pfill" id="pfill" style="width:0%"></div></div>
+    </div>
+
+    <div id="qWrap"></div>
+
+    <div class="btn-row">
+      <button class="btn-main" id="btnQ" onclick="nextQ()">Següent →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       RESULTAT
+  ══════════════════════════════ -->
+  <div id="stepR" style="display:none"></div>
+
+</div><!-- /wrap -->
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
+
+// ─── LABELS ───────────────────────────────────────────
+const ING_LABELS  = ['Menys de 1.000€','1.000–2.000€','2.000–3.000€','3.000–5.000€','5.000–8.000€','+8.000€'];
+const ING_MIDS    = [500, 1500, 2500, 4000, 6500, 10000];
+const DESP_LABELS = ['Menys de 500€','500–1.000€','1.000–1.500€','1.500–2.500€','2.500–4.000€','+4.000€'];
+const DESP_MIDS   = [250, 750, 1250, 2000, 3250, 5000];
+const SAV_LABELS  = ['Menys de 2.000€','2.000–5.000€','5.000–20.000€','20.000–50.000€','50.000–150.000€','150.000–300.000€','+300.000€'];
+const SAV_MIDS    = [1000, 3500, 12500, 35000, 100000, 225000, 400000];
+
+function updIng()  { document.getElementById('ingVal').textContent  = ING_LABELS[+document.getElementById('ing').value]; }
+function updDesp() { document.getElementById('despVal').textContent = DESP_LABELS[+document.getElementById('desp').value]; }
+function updSav()  { document.getElementById('savVal').textContent  = SAV_LABELS[+document.getElementById('sav').value]; }
+
+let habSel = '';
+function selHab(el, val) {
+  document.querySelectorAll('#habGrid .opt-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+  habSel = val;
+}
+
+// ─── PREGUNTES ─────────────────────────────────────────
+const Qs = [
+  {
+    title: 'Interès compost',
+    q: "Què és l'interès compost?",
+    opts: [
+      "Un interès fix que el banc cobra per un préstec",
+      "Els guanys generats per una inversió que, al seu torn, generen nous guanys",
+      "La suma de tots els interessos pagats en una hipoteca",
+      "Un producte d'estalvi garantit pels bancs"
+    ],
+    ans: 1,
+    exp: "L'interès compost és el procés pel qual els guanys es reinverteixen i generen nous guanys. Einstein el va anomenar la \"vuitena meravella del món\"."
+  },
+  {
+    title: 'Inflació',
+    q: "Si la inflació és del 3% anual i els teus estalvis no produeixen cap rendiment, al cap de 10 anys...",
+    opts: [
+      "El teu diner valdrà el mateix en termes reals",
+      "Hauràs guanyat poder adquisitiu",
+      "El teu diner haurà perdut aproximadament un 26% del seu valor real",
+      "La inflació no afecta els estalvis en compte corrent"
+    ],
+    ans: 2,
+    exp: "Amb una inflació del 3%, 1.000€ d'avui equivaldran a uns 744€ en termes de poder adquisitiu d'aquí 10 anys. Mantenir diners parats sense rendiment és perdre diners."
+  },
+  {
+    title: 'DCA',
+    q: "Què significa invertir amb «DCA» (Dollar-Cost Averaging)?",
+    opts: [
+      "Invertir tot el capital disponible d'un cop aprofitant mínims de mercat",
+      "Comprar accions estrangeres sempre en dòlars americans",
+      "Invertir una quantitat fixa de manera periòdica independentment del preu",
+      "Una estratègia d'inversió basada en derivats financers"
+    ],
+    ans: 2,
+    exp: "El DCA consisteix a invertir una quantitat fixa regularment (per exemple, 200€ cada mes). Permet comprar més participacions quan els preus cauen i menys quan pugen, reduint el cost mitjà."
+  },
+  {
+    title: 'TER',
+    q: "Quin és l'efecte del TER (Total Expense Ratio) o comissió anual d'un fons d'inversió?",
+    opts: [
+      "És una comissió que es paga una sola vegada en comprar el fons",
+      "Es cobra automàticament cada any sobre el capital invertit, reduint el rendiment net",
+      "Només s'aplica si el fons perd diners",
+      "L'inversor pot negociar-lo directament amb el gestor"
+    ],
+    ans: 1,
+    exp: "El TER es cobra anualment sobre el valor de la inversió. Un 1,5% de TER vs un 0,2% pot significar desenes de milers d'euros de diferència al cap de 20–30 anys."
+  },
+  {
+    title: 'Diversificació',
+    q: "Quina afirmació sobre diversificació és correcta?",
+    opts: [
+      "Diversificar garanteix no perdre diners mai",
+      "Tenir moltes accions del mateix sector és una bona diversificació",
+      "La diversificació redueix el risc específic però no elimina el risc de mercat global",
+      "Un inversor expert no necessita diversificar"
+    ],
+    ans: 2,
+    exp: "La diversificació redueix el risc de que un actiu concret et perjudiqui molt, però no et protegeix de caigudes generals del mercat. Cal combinar actius poc correlacionats."
+  },
+  {
+    title: 'Fons indexat',
+    q: "Quin és l'avantatge principal d'un fons indexat respecte a un fons actiu?",
+    opts: [
+      "El gestor expert sempre batarà el mercat",
+      "Garanteix rendiments positius cada any",
+      "Té comissions molt baixes i històricament supera la majoria de fons actius a llarg termini",
+      "Permet invertir exclusivament en empreses espanyoles"
+    ],
+    ans: 2,
+    exp: "Els fons indexats repliquen un índex (com el S&P 500) amb comissions molt baixes. Estudis mostren que el 80–90% dels fons actius no baten l'índex a llarg termini."
+  },
+  {
+    title: 'Fiscalitat',
+    q: "A Espanya, quan tributen els guanys d'un fons d'inversió?",
+    opts: [
+      "Cada any, tot i que no hagis venut res",
+      "Quan traspasses d'un fons a un altre, sempre tributes",
+      "Només quan reemborses (retires) les participacions i obtens guany",
+      "Els fons d'inversió estan exempts de tributació a Espanya"
+    ],
+    ans: 2,
+    exp: "A Espanya els fons d'inversió tributen només en el moment del reemborsament (venda). A més, els traspassos entre fons no tributen, cosa que permet optimitzar la fiscalitat diferint l'impost."
+  },
+  {
+    title: 'Pla de pensions',
+    q: "Quin és el principal avantatge fiscal d'un pla de pensions a Espanya?",
+    opts: [
+      "Els guanys mai tributen, ni en el moment de retirar",
+      "Les aportacions redueixen la base imposable de l'IRPF en l'any que es fan",
+      "Permet invertir sense límit anual amb deducció total",
+      "El capital invertit sempre és garantit pel govern"
+    ],
+    ans: 1,
+    exp: "Les aportacions a plans de pensions redueixen la base imposable de l'IRPF (fins a 1.500€/any generals + aportació empresa). L'avantatge és que difereix l'impost, no l'elimina — es paga en el moment de rescatar."
+  },
+  {
+    title: 'Risc i rendiment',
+    q: "Quina relació existeix entre risc i rendiment esperat en inversions?",
+    opts: [
+      "Més risc sempre implica menys rendiment",
+      "El rendiment no té cap relació amb el risc",
+      "Generalment, actius amb major risc esperen major rendiment potencial a llarg termini",
+      "Els actius de baix risc sempre ofereixen el millor rendiment"
+    ],
+    ans: 2,
+    exp: "La relació risc-rendiment és fonamental en finances. Un dipòsit bancari ofereix seguretat però poc rendiment. La renda variable és més volàtil però històricament ofereix molt millors rendiments a llarg termini."
+  },
+  {
+    title: 'Comissions ocultes',
+    q: "Un banc et ven un fons propi amb un 2% de comissió de gestió i 1% de distribució. Quin cost real suportes?",
+    opts: [
+      "Un 1% anual, perquè la comissió de distribució la paga el banc",
+      "Un 3% anual sobre el capital invertit",
+      "No hi ha cost, és una inversió i el banc assumeix les comissions",
+      "Depèn exclusivament de la rendibilitat obtinguda"
+    ],
+    ans: 1,
+    exp: "Les comissions de gestió I distribució es sumen i es cobren anualment sobre el teu capital. Un 3% anual en 20 anys pot representar entre un 40–60% menys de capital final respecte a un ETF equivalent al 0,2%."
+  }
+];
+
+// ─── STATE ────────────────────────────────────────────
+let cur = 0;
+let answers = new Array(10).fill(null); // true/false
+let answered = false;
+
+function renderQ() {
+  const q = Qs[cur];
+  document.getElementById('qLabel').textContent = `Pregunta ${cur+1} de 10`;
+  const pts = answers.filter(a => a === true).length;
+  document.getElementById('qPts').textContent = `${pts} / 10 correctes`;
+  document.getElementById('pfill').style.width = `${(cur/10)*100}%`;
+  document.getElementById('btnQ').textContent = cur < 9 ? 'Següent →' : 'Veure el meu diagnòstic →';
+  document.getElementById('btnQ').disabled = (answers[cur] === null);
+  answered = answers[cur] !== null;
+
+  const wrap = document.getElementById('qWrap');
+  wrap.innerHTML = `
+    <div class="q-step-label">Pas 3 de 3 · Test Financer</div>
+    <div class="q-title">${q.title}</div>
+    <div class="q-text">${q.q}</div>
+    <div class="q-opts" id="opts">
+      ${q.opts.map((o,i) => `
+        <button class="q-opt${answered ? (i===q.ans?' correct':(answers[cur]===false&&i===ansIdx[cur]?' wrong':'')) : ''}"
+          onclick="pickQ(${i})" ${answered?'disabled':''}>${o}</button>
+      `).join('')}
+    </div>
+    <div class="q-feedback ${answered?(answers[cur]?'ok show':'ko show'):''}" id="fb">
+      ${answered?(answers[cur]?'✓ Correcte! ':'✗ No és correcte. ')+q.exp:''}
+    </div>
+  `;
+}
+
+let ansIdx = new Array(10).fill(null);
+
+function pickQ(idx) {
+  if (answered) return;
+  answered = true;
+  const q = Qs[cur];
+  const correct = idx === q.ans;
+  answers[cur] = correct;
+  ansIdx[cur] = idx;
+  renderQ();
+}
+
+function nextQ() {
+  if (answers[cur] === null) return;
+  if (cur < 9) {
+    cur++;
+    renderQ();
+  } else {
+    showResult();
+  }
+}
+
+// ─── RESULTAT ─────────────────────────────────────────
+function showResult() {
+  const pts = answers.filter(a => a === true).length;
+  const savIdx = +document.getElementById('sav').value;
+  const capital = SAV_MIDS[savIdx];
+  const savLabel = SAV_LABELS[savIdx];
+
+  // Rendiment actual estimat per nivell de coneixement
+  let rendActual, rendLabel;
+  if (pts <= 3)      { rendActual = 0.00; rendLabel = '~0%'; }
+  else if (pts <= 6) { rendActual = 0.02; rendLabel = '~2%'; }
+  else if (pts <= 8) { rendActual = 0.04; rendLabel = '~4%'; }
+  else               { rendActual = 0.06; rendLabel = '~6%'; }
+
+  const rendObj = 0.065;
+  const years = 10;
+  const months = years * 12;
+  const rMensual = rendObj / 12;
+
+  // Capital inicial: estalvis actuals
+  const capFinalEst    = capital * Math.pow(1 + rendObj, years);
+  const capActualEst   = capital * Math.pow(1 + rendActual, years);
+
+  // Superàvit mensual: 50% de (ingressos - despeses fixes)
+  const ingMid  = ING_MIDS[+document.getElementById('ing').value];
+  const despMid = DESP_MIDS[+document.getElementById('desp').value];
+  const superavitMensual = Math.max(0, (ingMid - despMid) * 0.5);
+
+  // Valor final de les aportacions mensuals amb interès compost
+  // FV = C × ((1+r)^n - 1) / r
+  const aportFinalObj    = superavitMensual > 0 ? superavitMensual * (Math.pow(1 + rMensual, months) - 1) / rMensual : 0;
+  const aportFinalActual = superavitMensual > 0 ? superavitMensual * (Math.pow(1 + rendActual / 12, months) - 1) / (rendActual > 0 ? rendActual / 12 : 1) : 0;
+
+  const capFinal  = capFinalEst  + aportFinalObj;
+  const capActual = capActualEst + (rendActual > 0 ? aportFinalActual : superavitMensual * months);
+  const guany       = Math.round(capFinal - capActual);
+  const guanyAnual  = Math.round(guany / years);
+
+  // Perfil per puntuació
+  let perfil, perfilDesc;
+  if (pts <= 3) {
+    perfil = 'Nivell bàsic';
+    perfilDesc = 'Tens nocions inicials. Hi ha aspectes fonamentals que, un cop apresos, canviaran completament la teva relació amb els diners i els estalvis.';
+  } else if (pts <= 6) {
+    perfil = 'Nivell intermedi';
+    perfilDesc = 'Tens coneixements bàsics però hi ha aspectes clau que podrien marcar una diferència important en els teus resultats.';
+  } else if (pts <= 8) {
+    perfil = 'Nivell avançat';
+    perfilDesc = 'Tens una bona base financera. Amb una estratègia ben estructurada i un seguiment adequat, pots optimitzar significativament el rendiment del teu patrimoni.';
+  } else {
+    perfil = 'Nivell expert';
+    perfilDesc = 'Tens un coneixement financer sòlid. Treballar junts et permetria estructurar i optimitzar una estratègia personalitzada al màxim nivell.';
+  }
+
+  const nom      = document.getElementById('nom').value || 'Amic/a';
+  const ingLabel = ING_LABELS[+document.getElementById('ing').value];
+  const hab      = habSel || 'No indicat';
+
+  document.getElementById('step3').style.display = 'none';
+  document.getElementById('stepR').style.display = 'block';
+  document.getElementById('stepR').innerHTML = `
+    <div class="result-label">El teu diagnòstic</div>
+    <div class="profile-badge">✦ ${perfil} — ${pts}/10</div>
+    <p class="profile-desc">${perfilDesc}</p>
+
+    <div class="divider"></div>
+
+    <div class="rend-label">Rendiment mínim esperat si optimitzem</div>
+    <p class="rend-intro">Amb els teus estalvis estimem que a 10 anys vista <strong style="color:var(--text);font-weight:600">podem generar</strong>:</p>
+    <div class="rend-big">+${guany.toLocaleString('ca-ES')}€</div>
+    <div class="rend-annual"><span style="font-size:14px;color:var(--text3)">(+${guanyAnual.toLocaleString('ca-ES')}€/anuals)</span></div>
+    <p class="rend-compare">
+      Situació actual estimada: <strong>${rendLabel} de rendiment</strong><br>
+      → Projecció: <strong style="color:var(--ac)">6,5% de rendiment</strong> amb cartera diversificada permanent
+    </p>
+    <p class="rend-disclaimer">Els resultats i perfil poden variar. No és una garantia de rendibilitat.</p>
+
+    <div class="profile-box">
+      <p><strong>El teu perfil:</strong> ${nom}</p>
+      <p>Estalvis: ${savLabel} · Ingressos: ${ingLabel} · ${hab}</p>
+      <p>Puntuació: ${pts}/10 preguntes correctes</p>
+    </div>
+
+    <div class="cta-title">Vols millorar-ho?</div>
+    <p class="cta-desc">En Martí t'escriurà per WhatsApp per comentar el teu diagnòstic i explicar-te com podeu treballar junts, sense cap cost ni compromís.</p>
+    <button class="btn-main" onclick="ctaYes('${nom}')">Sí, vull parlar amb en Martí</button>
+    <button class="btn-sec" onclick="ctaNo()">Ara no m'interessa</button>
+    <div class="footer-note">Sense spam · Sense compromís</div>
+  `;
+
+  // Envia dades
+  sendData({
+    nom, contacte: document.getElementById('contacte').value,
+    ing: ingLabel, desp: DESP_LABELS[+document.getElementById('desp').value],
+    habitatge: hab, estalvis: savLabel,
+    puntuacio: `${pts}/10`, perfil,
+    guany_estimat: `+${guany.toLocaleString('ca-ES')}€ (10 anys)`,
+    tipus: 'Leads_Test'
+  });
+}
+
+function ctaYes(nom) {
+  document.getElementById('stepR').innerHTML = `
+    <div style="text-align:center;padding:40px 0">
+      <div style="font-size:48px;margin-bottom:20px">👋</div>
+      <div class="conf-title">Perfecte, ${nom}!</div>
+      <p class="conf-text" style="margin-top:12px">En Martí t'escriurà en les properes 24 hores per WhatsApp o per l'email que has indicat.</p>
+      <p style="font-size:13px;color:var(--text3);margin-top:8px">Si tens qualsevol dubte, pots contactar directament:<br>
+        <span style="color:var(--ac)">martiniroca@gmail.com</span> · <span style="color:var(--ac)">655 927 969</span>
+      </p>
+    </div>
+  `;
+}
+
+function ctaNo() {
+  document.getElementById('stepR').innerHTML += `
+    <p style="font-size:13px;color:var(--text3);text-align:center;margin-top:20px">
+      D'acord! Si en algun moment vols parlar, pots contactar a<br>
+      <span style="color:var(--ac)">martiniroca@gmail.com</span>
+    </p>
+  `;
+}
+
+// ─── SEND DATA ─────────────────────────────────────────
+function sendData(data) {
+  // Google Sheets
+  fetch(CONFIG.SHEETS_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({...data, data: new Date().toLocaleString('ca-ES')})
+  }).catch(err => console.warn('Sheets error:', err));
+
+  // EmailJS
+  const payload = {
+    nom: data.nom,
+    contacte: data.contacte,
+    ingressos: data.ing,
+    despeses: data.desp,
+    habitatge: data.habitatge,
+    estalvis: data.estalvis,
+    puntuacio: data.puntuacio,
+    perfil: data.perfil,
+    guany_estimat: data.guany_estimat,
+    data: new Date().toLocaleString('ca-ES')
+  };
+  console.log('Enviant EmailJS...', CONFIG.EMAILJS_SERVICE_ID, CONFIG.EMAILJS_TEMPLATE_ID, payload);
+
+  emailjs.send(CONFIG.EMAILJS_SERVICE_ID, CONFIG.EMAILJS_TEMPLATE_ID, payload)
+    .then(res => {
+      console.log('✅ EmailJS OK:', res.status, res.text);
+    })
+    .catch(err => {
+      console.error('❌ EmailJS ERROR:', JSON.stringify(err));
+      // Mostra error visible a la pàgina
+      const errDiv = document.createElement('div');
+      errDiv.style.cssText = 'background:#c0504d22;border:1px solid #c0504d55;border-radius:8px;padding:12px 16px;margin-top:16px;font-size:13px;color:#d98080;';
+      errDiv.textContent = '⚠ Error enviant: ' + JSON.stringify(err);
+      document.getElementById('stepR').appendChild(errDiv);
+    });
+}
+
+// ─── NAV ──────────────────────────────────────────────
+function checkPriv() {
+  document.getElementById('btnPriv').disabled = !document.getElementById('chkPriv').checked;
+}
+
+function goStep(n) {
+  document.getElementById('step1').style.display = n===1?'block':'none';
+  document.getElementById('step2').style.display = n===2?'block':'none';
+  document.getElementById('step3').style.display = n===3?'block':'none';
+
+  ['si1','si2','si3'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    el.className = 'step-item' + (i+1 === n ? ' active' : i+1 < n ? ' done' : '');
+    el.querySelector('.step-num').textContent = i+1 < n ? '✓' : i+1;
+  });
+
+  if (n === 3) renderQ();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+</script>
+</body>
+</html>
