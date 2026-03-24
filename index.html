@@ -502,12 +502,16 @@ input[type="range"]::-moz-range-thumb {
     <div class="section-title">Dades de contacte</div>
     <div class="card">
       <div class="field-full">
-        <label class="field-label">Nom i cognoms</label>
+        <label class="field-label">Nom i cognoms <span style="color:var(--ac)">*</span></label>
         <input class="field-input" type="text" id="nom" placeholder="El teu nom">
       </div>
+      <div class="field-full">
+        <label class="field-label">Telèfon <span style="color:var(--ac)">*</span></label>
+        <input class="field-input" type="tel" id="telefon" placeholder="6XX XXX XXX">
+      </div>
       <div class="field-full" style="margin-bottom:0">
-        <label class="field-label">Telèfon o email</label>
-        <input class="field-input" type="text" id="contacte" placeholder="Com puc contactar-te?">
+        <label class="field-label">Email <span style="color:var(--text3);font-size:11px;text-transform:none;letter-spacing:0">(opcional)</span></label>
+        <input class="field-input" type="email" id="contacte" placeholder="el.teu@email.com">
       </div>
     </div>
 
@@ -874,7 +878,7 @@ function showResult() {
 
   // Envia dades
   sendData({
-    nom, contacte: document.getElementById('contacte').value,
+    nom, telefon: document.getElementById('telefon').value, contacte: document.getElementById('contacte').value,
     ing: ingLabel, desp: DESP_LABELS[+document.getElementById('desp').value],
     habitatge: hab, estalvis: savLabel,
     puntuacio: `${pts}/10`, perfil,
@@ -918,6 +922,7 @@ function sendData(data) {
   // EmailJS
   const payload = {
     nom: data.nom,
+    telefon: data.telefon,
     contacte: data.contacte,
     ingressos: data.ing,
     despeses: data.desp,
@@ -950,6 +955,14 @@ function checkPriv() {
 }
 
 function goStep(n) {
+  if (n === 3) {
+    const nom = document.getElementById('nom').value.trim();
+    const tel = document.getElementById('telefon').value.trim();
+    if (!nom || !tel) {
+      alert('Si us plau, omple el nom i el telèfon per continuar.');
+      return;
+    }
+  }
   document.getElementById('step1').style.display = n===1?'block':'none';
   document.getElementById('step2').style.display = n===2?'block':'none';
   document.getElementById('step3').style.display = n===3?'block':'none';
