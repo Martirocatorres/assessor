@@ -447,6 +447,24 @@ input[type="range"]::-moz-range-thumb {
   color: var(--text3);
   margin-top: 16px;
 }
+
+/* ── VALIDACIÓ ── */
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%,60% { transform: translateX(-6px); }
+  40%,80% { transform: translateX(6px); }
+}
+.field-error {
+  border-color: #c0504d !important;
+  box-shadow: 0 0 0 2px rgba(192,80,77,0.3);
+  animation: shake 0.4s ease;
+}
+.field-error-msg {
+  font-size: 12px;
+  color: #d98080;
+  margin-top: 5px;
+  display: none;
+}
 </style>
 </head>
 <body>
@@ -454,8 +472,10 @@ input[type="range"]::-moz-range-thumb {
 
   <div class="hdr">
     <div class="hdr-label">Martí Roca de Torres · Assessor Independent</div>
-    <h1>Diagnòstic Financer</h1>
-    <p>Descobreix en 5 minuts on ets i quant pots millorar</p>
+    <h1 style="font-size:24px">Test de Diagnòstic Financer</h1>
+    <div id="heroBanner" style="margin:20px auto 0;max-width:520px;border-radius:var(--r2);padding:24px 28px;background:rgba(29,158,117,0.08);border:1.5px solid rgba(29,158,117,0.35);text-align:center">
+      <p style="font-family:'Playfair Display',serif;font-size:22px;color:var(--text);font-weight:500;line-height:1.45;margin:0">Descobreix en 5 minuts on ets financerament<br>i quants diners estàs perdent sense un <span style="color:#1D9E75;font-weight:600">assessor independent</span></p>
+    </div>
   </div>
 
   <!-- STEP BAR -->
@@ -488,7 +508,7 @@ input[type="range"]::-moz-range-thumb {
       </ul>
       <label class="check-row" for="chkPriv">
         <input type="checkbox" id="chkPriv" onchange="checkPriv()">
-        <span>He llegit i accepto el tractament confidencial de les meves dades per preparar la sessió</span>
+        <span>He llegit i accepto el tractament confidencial de les meves dades</span>
       </label>
       <button class="btn-main" id="btnPriv" disabled onclick="goStep(2)">Entès, comencem →</button>
     </div>
@@ -504,18 +524,21 @@ input[type="range"]::-moz-range-thumb {
       <div class="field-full">
         <label class="field-label">Nom i cognoms <span style="color:var(--ac)">*</span></label>
         <input class="field-input" type="text" id="nom" placeholder="El teu nom">
+        <div class="field-error-msg" id="err-nom">Cal indicar el teu nom</div>
       </div>
       <div class="field-full">
         <label class="field-label">Telèfon <span style="color:var(--ac)">*</span></label>
         <input class="field-input" type="tel" id="telefon" placeholder="6XX XXX XXX">
+        <div class="field-error-msg" id="err-tel">Cal indicar el teu telèfon</div>
       </div>
       <div class="field-full" style="margin-bottom:0">
-        <label class="field-label">Email <span style="color:var(--text3);font-size:11px;text-transform:none;letter-spacing:0">(opcional)</span></label>
+        <label class="field-label">Email <span style="color:var(--ac)">*</span></label>
         <input class="field-input" type="email" id="contacte" placeholder="el.teu@email.com">
+        <div class="field-error-msg" id="err-email">Cal indicar el teu email</div>
       </div>
     </div>
 
-    <div class="section-title">Ingressos i despeses</div>
+    <div class="section-title">Ingressos i estalvi</div>
     <div class="card">
       <div class="slider-wrap" style="margin-bottom:20px">
         <div class="slider-label-row">
@@ -526,10 +549,10 @@ input[type="range"]::-moz-range-thumb {
       </div>
       <div class="slider-wrap">
         <div class="slider-label-row">
-          <span class="slider-label">Despeses fixes mensuals</span>
-          <span class="slider-val" id="despVal">1.000–1.500€</span>
+          <span class="slider-label">Capacitat d'estalvi mensual</span>
+          <span class="slider-val" id="despVal">200–400€</span>
         </div>
-        <input type="range" id="desp" min="0" max="5" value="2" oninput="updDesp()">
+        <input type="range" id="desp" min="0" max="4" value="1" oninput="updDesp()">
       </div>
     </div>
 
@@ -592,8 +615,8 @@ emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
 // ─── LABELS ───────────────────────────────────────────
 const ING_LABELS  = ['Menys de 1.000€','1.000–2.000€','2.000–3.000€','3.000–5.000€','5.000–8.000€','+8.000€'];
 const ING_MIDS    = [500, 1500, 2500, 4000, 6500, 10000];
-const DESP_LABELS = ['Menys de 500€','500–1.000€','1.000–1.500€','1.500–2.500€','2.500–4.000€','+4.000€'];
-const DESP_MIDS   = [250, 750, 1250, 2000, 3250, 5000];
+const DESP_LABELS = ['Menys de 200€','200–400€','400–800€','800–2.000€','+2.000€'];
+const DESP_MIDS   = [100, 300, 600, 1400, 3000];
 const SAV_LABELS  = ['Menys de 5.000€','5.000–20.000€','20.000–50.000€','50.000–150.000€','150.000–300.000€','300.000–500.000€','+500.000€'];
 const SAV_MIDS    = [2500, 12500, 35000, 100000, 225000, 400000, 750000];
 
@@ -620,7 +643,7 @@ const Qs = [
       "Un producte d'estalvi garantit pels bancs"
     ],
     ans: 0,
-    exp: "L'interès compost és el procés pel qual els guanys es reinverteixen i generen nous guanys. Einstein el va anomenar la \"vuitena meravella del món\"."
+    exp: "Els guanys es reinverteixen i generen nous guanys. L'efecte s'accelera amb el temps."
   },
   {
     title: 'Inflació',
@@ -628,11 +651,11 @@ const Qs = [
     opts: [
       "El teu diner valdrà el mateix en termes reals",
       "Hauràs guanyat poder adquisitiu",
-      "El teu diner haurà perdut aproximadament un 26% del seu valor real",
+      "El teu diner valdrà menys en termes reals",
       "La inflació no afecta els estalvis en compte corrent"
     ],
     ans: 2,
-    exp: "Amb una inflació del 3%, 1.000€ d'avui equivaldran a uns 744€ en termes de poder adquisitiu d'aquí 10 anys. Mantenir diners parats sense rendiment és perdre diners."
+    exp: "1.000€ d'avui valdrien ~744€ en 10 anys. Diners parats = diners perduts."
   },
   {
     title: 'DCA',
@@ -644,43 +667,43 @@ const Qs = [
       "Invertir una quantitat fixa de manera periòdica independentment del preu"
     ],
     ans: 3,
-    exp: "El DCA consisteix a invertir una quantitat fixa regularment (per exemple, 200€ cada mes). Permet comprar més participacions quan els preus cauen i menys quan pugen, reduint el cost mitjà."
+    exp: "Invertir una quantitat fixa regularment redueix el cost mitjà d'entrada."
   },
   {
     title: 'TER',
-    q: "Quin és l'efecte del TER (Total Expense Ratio) o comissió anual d'un fons d'inversió?",
+    q: "Què és el TER d'un fons d'inversió?",
     opts: [
-      "És una comissió que es paga una sola vegada en comprar el fons",
-      "Es cobra automàticament cada any sobre el capital invertit, reduint el rendiment net",
-      "Només s'aplica si el fons perd diners",
-      "L'inversor pot negociar-lo directament amb el gestor"
+      "És un preu que es paga en comprar el fons",
+      "És el preu que es paga cada any sobre el capital invertit",
+      "És una comissió que només s'aplica si el fons perd diners",
+      "És una comissió de lliure negociació"
     ],
     ans: 1,
-    exp: "El TER es cobra anualment sobre el valor de la inversió. Un 1,5% de TER vs un 0,2% pot significar desenes de milers d'euros de diferència al cap de 20–30 anys."
+    exp: "Un 1,5% vs 0,2% de TER pot suposar desenes de milers d'euros de diferència a llarg termini."
   },
   {
     title: 'Diversificació',
     q: "Quina afirmació sobre diversificació és correcta?",
     opts: [
-      "La diversificació redueix el risc específic però no elimina el risc de mercat global",
-      "Diversificar garanteix no perdre diners mai",
-      "Tenir moltes accions del mateix sector és una bona diversificació",
-      "Un inversor expert no necessita diversificar"
+      "Si diversifiquem correctament reduïm el risc de caigudes però també de pujades",
+      "Si diversifiquem correctament garantim no perdre mai diners",
+      "Tenir moltes accions és garantia de diversificació",
+      "Els inversors experts no necessiten diversificar gens"
     ],
     ans: 0,
-    exp: "La diversificació redueix el risc de que un actiu concret et perjudiqui molt, però no et protegeix de caigudes generals del mercat. Cal combinar actius poc correlacionats."
+    exp: "Redueix el risc específic combinant actius poc correlacionats, però no elimina el risc de mercat."
   },
   {
     title: 'Fons indexat',
     q: "Quin és l'avantatge principal d'un fons indexat respecte a un fons actiu?",
     opts: [
-      "El gestor expert sempre batarà el mercat",
-      "Garanteix rendiments positius cada any",
-      "Permet invertir exclusivament en empreses espanyoles",
-      "Té comissions molt baixes i històricament supera la majoria de fons actius a llarg termini"
+      "El gestor expert sempre supera el mercat",
+      "Al ser indexat sempre agafem els beneficis més alts del sector",
+      "Permet invertir en empreses més petites i amb més potencial",
+      "Compra sempre les majors empreses i amb comissions molt baixes"
     ],
     ans: 3,
-    exp: "Els fons indexats repliquen un índex (com el S&P 500) amb comissions molt baixes. Estudis mostren que el 80–90% dels fons actius no baten l'índex a llarg termini."
+    exp: "El 80–90% dels fons actius no baten l'índex a llarg termini, i els indexats tenen comissions molt baixes."
   },
   {
     title: 'Fiscalitat',
@@ -692,7 +715,7 @@ const Qs = [
       "Els fons d'inversió estan exempts de tributació a Espanya"
     ],
     ans: 2,
-    exp: "A Espanya els fons d'inversió tributen només en el moment del reemborsament (venda). A més, els traspassos entre fons no tributen, cosa que permet optimitzar la fiscalitat diferint l'impost."
+    exp: "Els traspassos entre fons no tributen a Espanya. Només es paga en el moment del reemborsament."
   },
   {
     title: 'Pla de pensions',
@@ -704,31 +727,31 @@ const Qs = [
       "Les aportacions redueixen la base imposable de l'IRPF en l'any que es fan"
     ],
     ans: 3,
-    exp: "Les aportacions a plans de pensions redueixen la base imposable de l'IRPF (fins a 1.500€/any generals + aportació empresa). L'avantatge és que difereix l'impost, no l'elimina — es paga en el moment de rescatar."
+    exp: "Redueixen la base imposable de l'IRPF, però es paga l'impost al rescatar. Difereix, no elimina."
   },
   {
     title: 'Risc i rendiment',
     q: "Quina relació existeix entre risc i rendiment esperat en inversions?",
     opts: [
-      "Més risc sempre implica menys rendiment",
-      "Generalment, actius amb major risc esperen major rendiment potencial a llarg termini",
+      "En general el risc redueix el rendiment",
+      "Actius amb major risc esperen major rendiment potencial a llarg termini",
       "El rendiment no té cap relació amb el risc",
-      "Els actius de baix risc sempre ofereixen el millor rendiment"
+      "Els actius de baix risc solen superar els índexs al evitar el risc de caigudes"
     ],
     ans: 1,
-    exp: "La relació risc-rendiment és fonamental en finances. Un dipòsit bancari ofereix seguretat però poc rendiment. La renda variable és més volàtil però històricament ofereix molt millors rendiments a llarg termini."
+    exp: "La renda variable és més volàtil però històricament ofereix molt millors rendiments a llarg termini."
   },
   {
     title: 'Comissions ocultes',
     q: "Un banc et ven un fons propi amb un 2% de comissió de gestió i 1% de distribució. Quin cost real suportes?",
     opts: [
-      "Un 3% anual sobre el capital invertit",
-      "Un 1% anual, perquè la comissió de distribució la paga el banc",
-      "No hi ha cost, és una inversió i el banc assumeix les comissions",
+      "Sempre un 3% sobre el capital invertit",
+      "Un 2% fixe i un 1% extra si hi ha beneficis o retires els diners",
+      "Al ser bancs regulats no apliquen comissions sobre el capital invertit directament",
       "Depèn exclusivament de la rendibilitat obtinguda"
     ],
     ans: 0,
-    exp: "Les comissions de gestió i distribució es sumen i es cobren anualment sobre el teu capital. Un 3% anual en 20 anys pot representar entre un 40–60% menys de capital final respecte a un ETF equivalent al 0,2%."
+    exp: "Un 3% anual en 20 anys pot suposar un 40–60% menys de capital final respecte a un ETF al 0,2%."
   }
 ];
 
@@ -800,7 +823,10 @@ function showResult() {
   else if (pts <= 8) { rendActual = 0.04; rendLabel = '~4%'; }
   else               { rendActual = 0.06; rendLabel = '~6%'; }
 
-  const rendObj = 0.065;
+  const rendBase = 0.065;
+  const rendBonus = (habSel === 'Lloguer') ? 0.02 : 0;
+  const rendObj = rendBase + rendBonus;
+  const rendObjLabel = (habSel === 'Lloguer') ? '8,5%' : '6,5%';
   const years = 10;
   const months = years * 12;
   const rMensual = rendObj / 12;
@@ -809,10 +835,9 @@ function showResult() {
   const capFinalEst    = capital * Math.pow(1 + rendObj, years);
   const capActualEst   = capital * Math.pow(1 + rendActual, years);
 
-  // Superàvit mensual: 50% de (ingressos - despeses fixes)
   const ingMid  = ING_MIDS[+document.getElementById('ing').value];
   const despMid = DESP_MIDS[+document.getElementById('desp').value];
-  const superavitMensual = Math.max(0, (ingMid - despMid) * 0.5);
+  const superavitMensual = despMid;
 
   // Valor final de les aportacions mensuals amb interès compost
   // FV = C × ((1+r)^n - 1) / r
@@ -851,28 +876,51 @@ function showResult() {
     <div class="profile-badge">✦ ${perfil} — ${pts}/10</div>
     <p class="profile-desc">${perfilDesc}</p>
 
-    <div class="divider"></div>
-
-    <div class="rend-label">Rendiment mínim esperat si optimitzem</div>
-    <p class="rend-intro">Amb els teus estalvis estimem que a 10 anys vista <strong style="color:var(--text);font-weight:600">podem generar</strong>:</p>
-    <div class="rend-big">+${guany.toLocaleString('ca-ES')}€</div>
-    <div class="rend-annual"><span style="font-size:14px;color:var(--text3)">(+${guanyAnual.toLocaleString('ca-ES')}€/anuals)</span></div>
-    <p class="rend-compare">
-      Situació actual estimada: <strong>${rendLabel} de rendiment</strong><br>
-      → Projecció: <strong style="color:var(--ac)">6,5% de rendiment</strong> amb cartera diversificada permanent
-    </p>
-    <p class="rend-disclaimer">Els resultats i perfil poden variar. No és una garantia de rendibilitat.</p>
-
-    <div class="profile-box">
-      <p><strong>El teu perfil:</strong> ${nom}</p>
-      <p>Estalvis: ${savLabel} · Ingressos: ${ingLabel} · ${hab}</p>
-      <p>Puntuació: ${pts}/10 preguntes correctes</p>
+    <div style="border:1.5px solid rgba(29,158,117,0.4);border-radius:var(--r2);padding:28px 24px;margin:28px 0 24px;text-align:center;background:rgba(29,158,117,0.04)">
+      <p style="font-size:16px;color:var(--text);font-weight:600;margin-bottom:16px;line-height:1.55">Amb la teva situació i estalvis actuals estimem que podem generar:</p>
+      <div class="rend-big" style="color:#1D9E75">+${guany.toLocaleString('ca-ES')}€</div>
+      <p style="font-size:14px;color:var(--text3);margin-top:6px">en 10 anys · (+${guanyAnual.toLocaleString('ca-ES')}€/anuals)</p>
     </div>
 
-    <div class="cta-title">Vols millorar-ho?</div>
-    <p class="cta-desc">En Martí t'escriurà per WhatsApp per comentar el teu diagnòstic i explicar-te com podeu treballar junts, sense cap cost ni compromís.</p>
-    <button class="btn-main" onclick="ctaYes('${nom}')">Sí, vull parlar amb en Martí</button>
-    <button class="btn-sec" onclick="ctaNo()">Ara no m'interessa</button>
+    <p style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:4px"><strong style="color:var(--text)">Situació actual:</strong> ${rendLabel} de rendiment</p>
+    <p style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:12px">→ <strong style="color:#1D9E75">Si ho optimitzem:</strong> ${rendObjLabel} de rendiment amb cartera diversificada</p>
+    <p class="rend-disclaimer">Els resultats i perfil poden variar. No és una garantia de rendibilitat.</p>
+
+    <div class="cta-title" style="margin-top:32px">Vols aprendre com generar aquests ingressos?</div>
+
+    <style>
+      .cta-card{text-decoration:none;display:block;border-radius:var(--r2);padding:1.2rem 1.4rem;margin-bottom:.75rem;cursor:pointer;transition:transform .15s,background .15s,border-color .15s,box-shadow .15s}
+      .cta-card:hover{transform:translateY(-2px)}
+      .cta-primary{background:var(--ac);border:2px solid var(--ac)}
+      .cta-primary:hover{background:var(--ac-hover);border-color:var(--ac-hover);box-shadow:0 4px 20px rgba(201,168,76,.35)}
+      .cta-secondary{background:var(--bg2);border:1px solid rgba(201,168,76,.35)}
+      .cta-secondary:hover{background:var(--ac-dim);border-color:var(--ac);box-shadow:0 4px 16px rgba(201,168,76,.15)}
+      .cta-tertiary{background:var(--bg2);border:1px solid var(--border2)}
+      .cta-tertiary:hover{background:var(--bg3);border-color:rgba(201,168,76,.3);box-shadow:0 4px 16px rgba(255,255,255,.04)}
+    </style>
+
+    <a href="https://calendly.com/martiniroca/30min" target="_blank" class="cta-card cta-primary" style="text-align:center">
+      <p style="font-size:15px;font-weight:700;color:#111;margin-bottom:4px">Sessió gratuïta i sense compromís de 20 min →</p>
+      <p style="font-size:13px;color:rgba(0,0,0,0.55);line-height:1.5">Reserva una videotrucada i revisem el teu perfil.</p>
+    </a>
+
+    <a href="https://calendly.com/martiniroca/sessio-assessorament-69-h" target="_blank" class="cta-card cta-secondary" style="text-align:center">
+      <p style="font-size:15px;font-weight:700;color:var(--ac);margin-bottom:4px">Sessió d'assessorament professional, 69€/h →</p>
+      <p style="font-size:13px;color:var(--text3);line-height:1.5">Consulta independent · Proposta personalitzada</p>
+    </a>
+
+    <div class="cta-card cta-tertiary" style="text-align:center" onclick="showPhoneConfirm()">
+      <p style="font-size:14px;font-weight:600;color:var(--text2);margin-bottom:4px">No ho tinc clar</p>
+      <p style="font-size:13px;color:var(--text3);line-height:1.5;font-style:italic">Prefereixo que en Martí m'ho expliqui millor abans per telèfon</p>
+    </div>
+
+    <div id="phoneConfirm" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:16px;margin-bottom:12px;">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:10px">Confirma el teu telèfon i en Martí et contactarà per WhatsApp:</p>
+      <input type="tel" id="telConfirm" class="field-input" style="margin-bottom:10px" placeholder="6XX XXX XXX">
+      <button class="btn-main" style="margin-top:0" onclick="confirmPhone('${nom}')">Confirmar telèfon →</button>
+      <div id="phoneOk" style="display:none;margin-top:10px;font-size:13px;color:#1D9E75">✓ Rebut! En Martí t'escriurà aviat per WhatsApp.</div>
+    </div>
+
     <div class="footer-note">Sense spam · Sense compromís</div>
   `;
 
@@ -887,26 +935,32 @@ function showResult() {
   });
 }
 
-function ctaYes(nom) {
-  document.getElementById('stepR').innerHTML = `
-    <div style="text-align:center;padding:40px 0">
-      <div style="font-size:48px;margin-bottom:20px">👋</div>
-      <div class="conf-title">Perfecte, ${nom}!</div>
-      <p class="conf-text" style="margin-top:12px">En Martí t'escriurà en les properes 24 hores per WhatsApp o per l'email que has indicat.</p>
-      <p style="font-size:13px;color:var(--text3);margin-top:8px">Si tens qualsevol dubte, pots contactar directament:<br>
-        <span style="color:var(--ac)">martiniroca@gmail.com</span> · <span style="color:var(--ac)">655 927 969</span>
-      </p>
-    </div>
-  `;
+function showPhoneConfirm() {
+  const pc = document.getElementById('phoneConfirm');
+  pc.style.display = pc.style.display === 'none' ? 'block' : 'none';
+  if (pc.style.display === 'block') {
+    const tel = document.getElementById('telefon').value;
+    document.getElementById('telConfirm').value = tel;
+  }
 }
 
-function ctaNo() {
-  document.getElementById('stepR').innerHTML += `
-    <p style="font-size:13px;color:var(--text3);text-align:center;margin-top:20px">
-      D'acord! Si en algun moment vols parlar, pots contactar a<br>
-      <span style="color:var(--ac)">martiniroca@gmail.com</span>
-    </p>
-  `;
+function confirmPhone(nom) {
+  const tel = document.getElementById('telConfirm').value.trim();
+  if (!tel) { alert('Si us plau, indica el teu telèfon.'); return; }
+  document.getElementById('phoneOk').style.display = 'block';
+  document.getElementById('telConfirm').disabled = true;
+
+  sendData({
+    nom, telefon: tel, contacte: document.getElementById('contacte').value,
+    ing: ING_LABELS[+document.getElementById('ing').value],
+    desp: DESP_LABELS[+document.getElementById('desp').value],
+    habitatge: habSel || 'No indicat',
+    estalvis: SAV_LABELS[+document.getElementById('sav').value],
+    puntuacio: answers.filter(a=>a===true).length+'/10',
+    perfil: 'WhatsApp sol·licitat',
+    guany_estimat: '',
+    tipus: 'WhatsApp_Request'
+  });
 }
 
 // ─── SEND DATA ─────────────────────────────────────────
@@ -956,16 +1010,54 @@ function checkPriv() {
 
 function goStep(n) {
   if (n === 3) {
-    const nom = document.getElementById('nom').value.trim();
-    const tel = document.getElementById('telefon').value.trim();
-    if (!nom || !tel) {
-      alert('Si us plau, omple el nom i el telèfon per continuar.');
+    const nomEl = document.getElementById('nom');
+    const telEl = document.getElementById('telefon');
+    const emailEl = document.getElementById('contacte');
+    const nom = nomEl.value.trim();
+    const tel = telEl.value.trim();
+    const email = emailEl.value.trim();
+    let hasError = false;
+
+    // Reset tots
+    [nomEl, telEl, emailEl].forEach(el => el.classList.remove('field-error'));
+    ['err-nom','err-tel','err-email'].forEach(id => document.getElementById(id).style.display = 'none');
+
+    if (!nom) {
+      nomEl.classList.add('field-error');
+      document.getElementById('err-nom').style.display = 'block';
+      hasError = true;
+    }
+    if (!tel) {
+      telEl.classList.add('field-error');
+      document.getElementById('err-tel').style.display = 'block';
+      hasError = true;
+    }
+    if (!email) {
+      emailEl.classList.add('field-error');
+      document.getElementById('err-email').style.display = 'block';
+      hasError = true;
+    }
+
+    if (hasError) {
+      // Scroll al primer camp amb error
+      const first = document.querySelector('.field-error');
+      if (first) first.scrollIntoView({ behavior:'smooth', block:'center' });
+      // Treure l'efecte al escriure
+      [nomEl, telEl, emailEl].forEach(el => {
+        el.addEventListener('input', function handler() {
+          el.classList.remove('field-error');
+          const errId = el.id === 'nom' ? 'err-nom' : el.id === 'telefon' ? 'err-tel' : 'err-email';
+          document.getElementById(errId).style.display = 'none';
+          el.removeEventListener('input', handler);
+        });
+      });
       return;
     }
   }
   document.getElementById('step1').style.display = n===1?'block':'none';
   document.getElementById('step2').style.display = n===2?'block':'none';
   document.getElementById('step3').style.display = n===3?'block':'none';
+  document.getElementById('heroBanner').style.display = n===1?'block':'none';
 
   ['si1','si2','si3'].forEach((id,i) => {
     const el = document.getElementById(id);
