@@ -896,13 +896,13 @@ function showResult() {
       .cta-tertiary:hover{background:var(--bg3);border-color:rgba(201,168,76,.3);box-shadow:0 4px 16px rgba(255,255,255,.04)}
     </style>
 
-    <a href="https://calendly.com/martiniroca/30min" target="_blank" class="cta-card cta-primary" style="text-align:center">
+    <a href="https://calendly.com/martiniroca/30min" target="_blank" class="cta-card cta-primary" style="text-align:center" onclick="trackCTA('Sessio_Gratuita', '${nom}')">
       <p style="font-size:15px;font-weight:700;color:#111;margin-bottom:4px">Sessió gratuïta i sense compromís de 20 min →</p>
       <p style="font-size:13px;color:rgba(0,0,0,0.55);line-height:1.5">Reserva una videotrucada i revisem el teu perfil.</p>
     </a>
 
-    <a href="https://calendly.com/martiniroca/sessio-assessorament-69-h" target="_blank" class="cta-card cta-secondary" style="text-align:center">
-      <p style="font-size:15px;font-weight:700;color:var(--ac);margin-bottom:4px">Sessió d'assessorament professional, 69€/h →</p>
+    <a href="https://martirocatorres.github.io/tarifes" target="_blank" class="cta-card cta-secondary" style="text-align:center" onclick="trackCTA('Veure_Tarifes', '${nom}')">
+      <p style="font-size:15px;font-weight:700;color:var(--ac);margin-bottom:4px">Veure assessorament complet i tarifes →</p>
       <p style="font-size:13px;color:var(--text3);line-height:1.5">Consulta independent · Proposta personalitzada</p>
     </a>
 
@@ -1064,6 +1064,18 @@ function goStep(n) {
 
   if (n === 3) renderQ();
   window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function trackCTA(opcio, nom) {
+  sendData({
+    nom: nom,
+    telefon: document.getElementById('telefon') ? document.getElementById('telefon').value : '',
+    contacte: document.getElementById('contacte') ? document.getElementById('contacte').value : '',
+    ing: '', desp: '', habitatge: '', estalvis: '',
+    puntuacio: '', perfil: '',
+    guany_estimat: '',
+    tipus: 'CTA_Click_' + opcio
+  });
 }
 </script>
 </body>
